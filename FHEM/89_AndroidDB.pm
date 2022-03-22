@@ -4,7 +4,7 @@
 #
 # 89_AndroidDB
 #
-# Version 0.6
+# Version 0.7
 #
 # FHEM Integration for Android Devices
 #
@@ -164,25 +164,25 @@ my $MACRO = { };
 sub Define ($$$)
 {
    my ($hash, $a, $h) = @_;
-   
-    my $usage = "define $hash->{NAME} AndroidDB {NameOrIP[:Port]}";
-    
-    return $usage if (scalar(@$a) < 3);
 
-    # Set parameters
-    my ($devName, $devPort) = split (':', $$a[2]);
-    $hash->{ADBDevice} = $devName.':'.($devPort // '5555');
-    
-    AssignIoPort ($hash);
-    
-    $attr{$hash->{NAME}}{webCmd} = 'remoteControl';
-    
-    # Clone predefined presets and macros
-    $hash->{adb}{preset} = dclone $PRESET;
-    $hash->{adb}{macro} = dclone $MACRO;
-    
-    InitAfterStart ($hash) if ($init_done);
-    
+   my $usage = "define $hash->{NAME} AndroidDB {NameOrIP[:Port]}";
+
+   return $usage if (scalar(@$a) < 3);
+
+   # Set parameters
+   my ($devName, $devPort) = split (':', $$a[2]);
+   $hash->{ADBDevice} = $devName.':'.($devPort // '5555');
+
+   AssignIoPort ($hash);
+
+   $attr{$hash->{NAME}}{webCmd} = 'remoteControl';
+
+   # Clone predefined presets and macros
+   $hash->{adb}{preset} = dclone $PRESET;
+   $hash->{adb}{macro} = dclone $MACRO;
+
+   InitAfterStart ($hash) if ($init_done);
+
    return undef;
 }
 
@@ -235,8 +235,8 @@ sub Set ($@)
     my $preset   = AttrVal ($name, 'preset', '');
     push @presetList, sort keys %{$hash->{adb}{preset}{$preset}} if ($preset ne '' && exists($hash->{adb}{preset}{$preset}));
     push @presetList, sort keys %{$hash->{adb}{preset}{_custom_}} if (exists($hash->{adb}{preset}{_custom_}));
-    my %e;
-    $options .= ' remoteControl:'.join(',', sort grep { !$e{$_}++ } @presetList) if (scalar(@presetList) > 0);
+    my %e1;
+    $options .= ' remoteControl:'.join(',', sort grep { !$e1{$_}++ } @presetList) if (scalar(@presetList) > 0);
     
     # Add remote control layouts to command createRemote
     my @layouts = keys %{$data{RC_layout}};
@@ -246,8 +246,8 @@ sub Set ($@)
     my @macroList = ();
     push @macroList, sort keys %{$hash->{adb}{macro}{$preset}} if ($preset ne '' && exists($hash->{adb}{macro}{$preset}));
     push @macroList, sort keys %{$hash->{adb}{macro}{_custom_}} if (exists($hash->{adb}{macro}{_custom_}));
-    my %e;
-    $options .= ' '.join(' ', sort grep { !$e{$_}++ } @macroList) if (scalar(@macroList) > 0);
+    my %e2;
+    $options .= ' '.join(' ', sort grep { !$e2{$_}++ } @macroList) if (scalar(@macroList) > 0);
 
     my $lcopt = lc($opt);
 
