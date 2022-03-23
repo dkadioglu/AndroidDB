@@ -390,8 +390,9 @@ sub Attr ($@)
 
     if ($cmd eq 'set') {
         if ($attrName eq 'macros') {
+           delete $hash->{adb}{preset}{_custom_} if (exists($hash->{adb}{preset}{_custom_}));
             foreach my $macroDef (split /;/, $attrVal) {
-                my ($macroName, $macroPar) = split (':', $macroDef);
+                my ($macroName, $macroPar) = split (':', $macroDef, 2);
                 if (!defined($macroDef)) {
                     Log3 $name, 2, "Missing defintion for macro $macroName";
                     return "Missing definition for macro $macroName";
@@ -459,7 +460,7 @@ sub LoadPresets ($$)
     foreach my $l (@lines) {
         next if ($l =~ /^#/);	# Comments are allowed
 
-        my ($macroName, $macroPar) = split (':', $l);
+        my ($macroName, $macroPar) = split (':', $l, 2);
         if (!defined($macroPar)) {
             next if (!defined($macroName) || $macroName eq '');
             if ($macroName !~ /^[a-zA-Z0-9-_]+$/) {
