@@ -391,6 +391,7 @@ sub Attr ($@)
     if ($cmd eq 'set') {
         if ($attrName eq 'macros') {
            delete $hash->{adb}{preset}{_custom_} if (exists($hash->{adb}{preset}{_custom_}));
+           delete $hash->{adb}{macro}{_custom_} if (exists($hash->{adb}{macro}{_custom_}));
             foreach my $macroDef (split /;/, $attrVal) {
                 my ($macroName, $macroPar) = split (':', $macroDef, 2);
                 if (!defined($macroDef)) {
@@ -416,6 +417,7 @@ sub Attr ($@)
     }
     elsif ($cmd eq 'del') {
         delete $hash->{adb}{preset}{_custom_} if (exists($hash->{adb}{preset}{_custom_}));
+        delete $hash->{adb}{macro}{_custom_} if (exists($hash->{adb}{macro}{_custom_}));
     }
 
     return undef;
