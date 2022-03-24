@@ -4,7 +4,7 @@
 #
 # 89_AndroidDB
 #
-# Version 0.7
+# Version 0.8
 #
 # FHEM Integration for Android Devices
 #
@@ -37,7 +37,7 @@ sub AndroidDB_Initialize ($)
     $hash->{ShutdownFn} = "AndroidDB::Shutdown";
 
     $hash->{parseParams} = 1;
-    $hash->{AttrList} = 'connect:0,1 macros:textField-long preset presetFile '.$readingFnAttributes;
+    $hash->{AttrList} = 'connect:0,1 createReadings macros:textField-long preset presetFile '.$readingFnAttributes;
 
     $data{RC_layout}{MagentaTVStick} = "AndroidDB::RCLayoutMagentaTVStick";
     $data{RC_layout}{MagentaOne} = "AndroidDB::RCLayoutMagentaOne";
@@ -59,6 +59,7 @@ BEGIN {
         readingsBulkUpdateIfChanged
         readingsBeginUpdate
         readingsEndUpdate
+        makeReadingName
         setDevAttrList
         CommandDefine
         CommandSet
@@ -276,7 +277,10 @@ sub Set ($@)
     elsif ($lcopt eq 'shell') {
         return "Usage: set $name $opt ShellCommand" if (scalar(@$a) == 0);
         my ($rc, $result, $error) = AndroidDBHost::Run ($hash, $opt, '.*', @$a);
-        return $result.$error,
+        return $error if ($rc == 0);
+        my $createReadings = AttrVal ($name, 'createReadings', '');
+        return $result if ($createReadings eq '' || $createReadings !~ /$createReadings/);
+        UpdateReadings ($hash, $result);
     }
     elsif ($lcopt eq 'remotecontrol') {
         my $macroName = shift @$a // return "Usage: set $name $opt MacroName";
@@ -522,6 +526,24 @@ sub ExportPresets ($$)
     return 0;
 }
 
+sub UpdateReadings ($$)
+{
+   my ($hash, $data) = @_;
+
+   readingsBeginUpdate ($hash);
+
+   foreach my $line (split /[\n\r]+/, $data) {
+      $line =~ s/^\s+//;      # Remove leading whitespace characters 
+      next if ($line eq '');  # Ignore empty lines
+      my @a = split('=', $line);
+      next if (scalar(@a) != 2);
+      my $r = makeReadingName ($a[0]);
+      readingsBulkUpdate ($hash, $r, $a[1]);
+   }
+
+   readingsEndUpdate ($hash, 1);
+}
+
 sub ShowMessage ($$$)
 {
     my ($hash, $level, $msg) = @_;
@@ -698,6 +720,11 @@ sub RCLayoutMagentaTVExt () {
    <li><b>connect 0|1</b><br/>
        If set to 1, a connection to the Android device will be established during
        FHEM start. Note: Set this attribute for one Android device only!
+   </li><br/>
+   <a name="createReadings"></a>
+   <li><b>createReadings &lt;command-expression&gt;</b><br/>
+       Create readings for shell <i>command-expression</i>. Output must contain lines in format key=value.<br/>
+       Example: attr myDev createReadings dumpsys
    </li><br/>
     <a name="macros"></a>
     <li><b>macros &lt;MacroDef&gt;[;...]</b><br/>
