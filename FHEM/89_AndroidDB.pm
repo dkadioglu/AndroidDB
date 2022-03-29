@@ -4,7 +4,7 @@
 #
 # 89_AndroidDB
 #
-# Version 0.8
+# Version 0.9
 #
 # FHEM Integration for Android Devices
 #
@@ -269,23 +269,19 @@ sub Set ($@) {
         if ( scalar(@$a) == 0 );
       return "Only one KeyCode allowed when option '--longpress' is specified"
         if ( $$a[0] eq '--longpress' && scalar(@$a) > 2 );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'keyevent', @$a );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'keyevent', @$a );
       return $error if ( $rc == 0 );
    }
    elsif ( $lcopt eq 'sendnumkeys' ) {
       my $number = shift @$a // return "Usage: set $name $opt Number";
       return 'Parameter Number must be in range 1-9999'
         if ( $number !~ /^[0-9]+$/ || $number < 1 || $number > 9999 );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'text', $number );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'text', $number );
       return $error if ( $rc == 0 );
    }
    elsif ( $lcopt eq 'sendtext' ) {
       return "Usage: set $name $opt Text" if ( scalar(@$a) < 1 );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'text',
-         join( ' ', @$a ) );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'text', join( ' ', @$a ) );
       return $error if ( $rc == 0 );
    }
    elsif ( $lcopt eq 'reboot' ) {
@@ -294,12 +290,12 @@ sub Set ($@) {
    }
    elsif ( $lcopt eq 'shell' ) {
       return "Usage: set $name $opt ShellCommand" if ( scalar(@$a) == 0 );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, $opt, '.*', @$a );
+      my $shellCommand = $a[0];
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, $opt, '.*', @$a );
       return $error if ( $rc == 0 );
       my $createReadings = AttrVal( $name, 'createReadings', '' );
       return $result
-        if ( $createReadings eq '' || $createReadings !~ /$createReadings/ );
+        if ( $createReadings eq '' || $shellCommand !~ /$createReadings/ );
       UpdateReadings( $hash, $result );
    }
    elsif ( $lcopt eq 'remotecontrol' ) {
@@ -310,8 +306,7 @@ sub Set ($@) {
       return "Preset and/or macro $macroName not defined in preset $preset"
         if ( $preset eq ''
          || !exists( $hash->{adb}{preset}{$preset}{$macroName} ) );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'keyevent',
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'keyevent',
          split( ',', $hash->{adb}{preset}{$preset}{$macroName} ) );
       return $error if ( $rc == 0 );
    }
@@ -325,8 +320,7 @@ sub Set ($@) {
    elsif ( $lcopt eq 'rollhorz' || $lcopt eq 'rollvert' ) {
       my $delta = shift @$a // return "Usage: set $name $opt Delta";
       my ( $dx, $dy ) = $opt eq 'rollhorz' ? ( $delta, 0 ) : ( 0, $delta );
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'roll', $dx, $dy );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'shell', '.*', 'input', 'roll', $dx, $dy );
       return $error if ( $rc == 0 );
    }
    elsif ( $lcopt eq 'createremote' ) {
@@ -360,8 +354,7 @@ sub Set ($@) {
    {
       my ( $args, $pars ) = parseParams( $hash->{adb}{macro}{_custom_}{$opt} );
       my $cmd = shift @$args;
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, $cmd, '.*', @$args );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, $cmd, '.*', @$args );
       return $rc == 0 ? $error : $result;
    }
    elsif ( $preset ne ''
@@ -370,8 +363,7 @@ sub Set ($@) {
    {
       my ( $args, $pars ) = parseParams( $hash->{adb}{macro}{$preset}{$opt} );
       my $cmd = shift @$args;
-      my ( $rc, $result, $error ) =
-        AndroidDBHost::Run( $hash, $cmd, '.*', @$args );
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, $cmd, '.*', @$args );
       return $rc == 0 ? $error : $result;
    }
    else {
