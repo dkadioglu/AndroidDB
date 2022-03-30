@@ -290,7 +290,7 @@ sub Set ($@) {
    }
    elsif ( $lcopt eq 'shell' ) {
       return "Usage: set $name $opt ShellCommand" if ( scalar(@$a) == 0 );
-      my $shellCommand = $a[0];
+      my $shellCommand = @$a[0];
       my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, $opt, '.*', @$a );
       return $error if ( $rc == 0 );
       my $createReadings = AttrVal( $name, 'createReadings', '' );
