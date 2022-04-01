@@ -4,7 +4,7 @@
 #
 # 89_AndroidDB
 #
-# Version 0.9
+# Version 1.0
 #
 # FHEM Integration for Android Devices
 #
@@ -379,7 +379,7 @@ sub Get ($@)
     my $name = shift @$a;
     my $opt = shift @$a // return 'No get command specified';
     
-    my $options = 'keyPreset';
+    my $options = 'logcat keyPreset';
     my @presetList = sort keys %{$hash->{adb}{preset}};
     $options .= ':'.join(',', @presetList) if (scalar(@presetList) > 0);
     my @macroList = sort keys %{$hash->{adb}{macro}};
@@ -408,6 +408,10 @@ sub Get ($@)
             $macroDef .= "$macro = $hash->{adb}{macro}{$preset}{$macro}<br/>";
         }
         return $macroDef;
+    }
+    elsif ($lcopt eq 'logcat') {
+      my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'logcat', '.*', '-d' );
+      return $rc == 0 ? $error : $result;
     }
     else {
         return "Unknown argument $opt, choose one of $options";
@@ -733,12 +737,15 @@ sub RCLayoutMagentaTVExt () {
 <a name="AndroidDBget"></a>
 <b>Get</b><br/><br/>
 <ul>
-    <li><b>set &lt;Name&gt; keyPreset &lt;PresetName&gt;</b><br/>
-        List key preset definition.
-    </li>br/>
-    <li><b>set &lt;Name&gt; cmdPreset &lt;PresetName&gt;</b><br/>
+    <li><b>get &lt;Name&gt; cmdPreset &lt;PresetName&gt;</b><br/>
         List command preset definition.
-    </li>br/>
+    </li><br/>
+    <li><b>get &lt;Name&gt; keyPreset &lt;PresetName&gt;</b><br/>
+        List key preset definition.
+    </li><br/>
+    <li><b>get &lt;Name&gt; logcat</b><br/>
+        List device log.
+    </li><br/>
 </ul>
 
 <a name="AndroidDBattr"></a>
