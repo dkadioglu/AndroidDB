@@ -410,8 +410,21 @@ sub Get ($@)
         return $macroDef;
     }
     elsif ($lcopt eq 'logcat') {
+      my $filename = shift @$a;
       my ( $rc, $result, $error ) = AndroidDBHost::Run( $hash, 'logcat', '.*', '-d' );
-      return $rc == 0 ? $error : $result;
+      return $error if ($rc == 0);
+      if (defined($filename)) {
+         if (open (LOGCATFILE, ">$filename")) {
+            print LOGCATFILE "$result\n";
+            close (LOGCATFILE);
+         }
+         else {
+            return "Can't open file $filename";
+         }
+      }
+      else {
+         return $result;
+      }
     }
     else {
         return "Unknown argument $opt, choose one of $options";
@@ -743,8 +756,8 @@ sub RCLayoutMagentaTVExt () {
     <li><b>get &lt;Name&gt; keyPreset &lt;PresetName&gt;</b><br/>
         List key preset definition.
     </li><br/>
-    <li><b>get &lt;Name&gt; logcat</b><br/>
-        List device log.
+    <li><b>get &lt;Name&gt; logcat [&lt;Filename&gt;]</b><br/>
+        List device log. If <i>Filename</i> is specified, output is written to the file.
     </li><br/>
 </ul>
 
