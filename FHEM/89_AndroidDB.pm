@@ -696,7 +696,7 @@ sub RCLayoutMagentaTVExt () {
     <li><b>set &lt;Name&gt; createRemote &lt;Layout&gt;</b><br/>
         Create a remote control device for the Android device. Create a notify device for
         the remote control to send button events to the AndroidDB device.
-    </li>br/>
+    </li><br/>
     <li><b>set &lt;Name&gt; exportPresets &lt;Filename&gt;</b><br/>
        Export the currently loaded presets to file. This file can be modified and assigned 
        again by using attribute 'preset'.
